@@ -42,9 +42,11 @@ $app->group('/student', function () use ($app) {
             $error[] = "Your student ID and Password did not match";
         }
 
-        // End of Verifying student id 
-        //                             
-        // Start checking student debt status
+        /**
+         * End of verifying student id
+         * 
+         * Start checking student debt status
+         */
 
         $query_1 = "SELECT * FROM debtor WHERE studentid =:studentid";
         $sth_2 = $this->db->prepare($query_1);
@@ -56,9 +58,11 @@ $app->group('/student', function () use ($app) {
             $error[] = "You have a debt in your account";
         }
 
-        // End of checking student debt status
-        //
-        // Start checking student status from table status
+        /**
+         * End of checking student debt status
+         * 
+         * Start checking student status from table status
+         */
 
         $query_2 = "SELECT * FROM status WHERE studentid =:studentid";
         $sth_3 = $this->db->prepare($query_2);
@@ -72,9 +76,11 @@ $app->group('/student', function () use ($app) {
             }
         }
 
-        // End of checking student status from table status
-        //
-        // Start checking student result status
+        /**
+         * End of checking student status from table status 
+         * 
+         * Start checking student result status
+         */
 
         $sth_4 = $this->db->prepare($query_2);
         $sth_4->bindParam("studentid", $input['id']);
@@ -98,9 +104,11 @@ $app->group('/student', function () use ($app) {
             }
         }
 
-        // End of checking student result status
-        //
-        // Start checking student set A status
+        /**
+         * End of checking student result status 
+         * 
+         * Start checking student set A status
+         */
 
         $sth_5 = $this->db->prepare($query_2);
         $sth_5->bindParam("studentid", $input['id']);
@@ -114,9 +122,11 @@ $app->group('/student', function () use ($app) {
             }
         }
 
-        // End of checking student set A status
-        //
-        // Start checking student Active or not
+        /**
+         * End of checking student set A status
+         * 
+         * Start checking student Active or not
+         */
 
         $query_3 = "SELECT * FROM users WHERE id =:id";
         $sth_6 = $this->db->prepare($query_3);
@@ -131,9 +141,11 @@ $app->group('/student', function () use ($app) {
             }
         }
 
-        // End of checking student Activation
-        //
-        // Start checking for an error or else create a payload
+        /**
+         * End of checking student Activation
+         * 
+         * Start checking for an error or else create a payload
+         */
 
         if(sizeof($error) >= 1) {
             return $this->response->withJson(['error' => true, 'message' => $error], 403)
@@ -189,9 +201,11 @@ $app->group('/student', function () use ($app) {
 
     });
     
-    // End of route login
-    //
-    // Group all route for address
+    /**
+     * End of route login
+     * 
+     * Group all route for address
+     */
 
     $app->group('/address', function () use ($app) {
 
@@ -232,7 +246,7 @@ $app->group('/student', function () use ($app) {
     
         });
     
-        $app->put('/rentaddress/[{id}]', function ($request, $response, $args) {
+        $app->put('/rentaladdress/[{id}]', function ($request, $response, $args) {
         
             $jwt = $request->getHeaders();
     
@@ -290,29 +304,37 @@ $app->group('/student', function () use ($app) {
         });
     });
 
-    //  End of route address
-    //
-    //  Start of route finance
+    /**
+     * End of route address
+     * 
+     * Start route finance 
+     */
 
     $app->group('/finance', function () use ($app) {
 
         $app->post('/upload/{studentid}', function(Request $request, Response $response, $args) {
 
             $uploadedFiles = $request->getUploadedFiles();
-            
-            //  HANDLE SINGLE INPUT WITH SINGLE FILE UPLOAD
+            /**
+             * Handle single input with single file upload
+             */
             $uploadedFile = $uploadedFiles['filename'];
             if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
                 
                 $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
-                
-                //  CHANGE THE NAME OF THE FILE WITH STUDENT ID
-                $filename = sprintf('%s.%0.8s', $args["studentid"], $extension);
+                /**
+                 * Change the name of the file with student ID
+                 */
+                $filename = sprintf('%s.%0.8s', $args["studentid"], 'png');
+                // print"testing";
                 
                 $directory = $this->get('settings')['upload_directory'];
                 $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
         
-                // SAVE THE FILE INTO THE SERVER
+                /**
+                 * Save the file into the server
+                */
+
                 $sql = "UPDATE feepaid SET filename=:filename WHERE studentid=:studentid";
                 $stmt = $this->db->prepare($sql);
                 $params = [
@@ -356,10 +378,12 @@ $app->group('/student', function () use ($app) {
             
         });
 
-        // FOR FUTURE USE
-        // TO CHECK AN UPLOADED IMAGE ON THE SERVER
-        //
-        // START TO CHECK AN UPLOADED IMAGE ON THE SERVER
+        /**
+         * For the future use
+         * to check an uploaded image on the server
+         * 
+         * Start to check the uploaded image on the server
+         */
 
         $app->get('/image/[{studentid}]', function ($request, $response, $args) {   
     
@@ -384,14 +408,78 @@ $app->group('/student', function () use ($app) {
             
         });
 
-        // END OF CHECKING UPLOADED IMAGE ON THE SERVER
+        /**
+         * End of checking uploaded image on the server
+         */
 
     });
 });
 
-// FOR FUTURE USE
-// TO CHECK THE JWT TOKEN 
-//
+$app->group('/admin', function () use ($app) {
+
+    /**
+     * Retrieve all stundent Data 
+     */
+
+    $app->get('/mailingAddress', function (Request $request, Response $response, array $args) {
+
+        $sth = $this->db->prepare("SELECT * from permadd");
+        $sth->execute();
+        $fetch = $sth->fetchAll();
+
+        return $this->response->withJson(array('data'=>$fetch));
+    });
+
+    $app->get('/rentalAddress', function (Request $request, Response $response, array $args) {
+
+        $sth = $this->db->prepare("SELECT * from rentadd");
+        $sth->execute();
+        $fetch = $sth->fetchAll();
+
+        return $this->response->withJson(array('data'=>$fetch));
+    });
+
+    $app->put('/mailingAddress/[{id}]', function (Request $request, Response $response, array $args) {
+        $input = $request->getParsedBody();
+        $sql = "UPDATE permadd SET phone =:phone, address1 =:address1, address2 =:address2 ,
+                        postcode =:postcode, city =:city, state =:state, country =:country WHERE id =:id";
+        $sth = $this->db->prepare($sql);
+        $sth->bindParam("id", $args['id']);
+        $sth->bindParam("phone", $input['phone']);
+        $sth->bindParam("address1", $input['address1']);
+        $sth->bindParam("address2", $input['address2']);
+        $sth->bindParam("postcode", $input['postcode']);
+        $sth->bindParam("city", $input['city']);
+        $sth->bindParam("state", $input['state']);
+        $sth->bindParam("country", $input['country']);
+        $sth->execute();
+    
+        return $response->withJson($input, 200)->withStatus(200)->withHeader('Content-type', 'application/json');
+    });
+    
+    $app->put('/rentalAddress/[{id}]', function (Request $request, Response $response, array $args) {
+        $input = $request->getParsedBody();
+        $sql = "UPDATE rentadd SET address1 =:address1, address2 =:address2 ,
+                        postcode =:postcode, city =:city, state =:state, country =:country WHERE id =:id";
+        $sth = $this->db->prepare($sql);
+        $sth->bindParam("id", $args['id']);
+        $sth->bindParam("address1", $input['address1']);
+        $sth->bindParam("address2", $input['address2']);
+        $sth->bindParam("postcode", $input['postcode']);
+        $sth->bindParam("city", $input['city']);
+        $sth->bindParam("state", $input['state']);
+        $sth->bindParam("country", $input['country']);
+        $sth->execute();
+    
+        return $response->withJson($input, 200)->withStatus(200)->withHeader('Content-type', 'application/json');
+    });
+
+});
+
+/**
+ * For futur use 
+ * To check the JWT Token validation
+ */
 
 $app->get('/token', function (Request $request, Response $response, array $args) {
 
